@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2C2C35">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TSC Daily OS">
+<title>TSC Daily OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #2C2C35;
+    --bg2: #31313b;
+    --bg3: #363642;
+    --rose: #B07080;
+    --rose2: #c9909f;
+    --rose3: rgba(176,112,128,0.15);
+    --gold: #c9a96e;
+    --gold2: rgba(201,169,110,0.12);
+    --blush: #F5ECEE;
+    --blue: #7ab3cc;
+    --t1: #ede5e7;
+    --t2: rgba(237,229,231,0.65);
+    --t3: rgba(237,229,231,0.35);
+    --b1: rgba(176,112,128,0.22);
+    --b2: rgba(237,229,231,0.07);
+    --b3: rgba(237,229,231,0.04);
+  }
+  html { min-height: 100%; }
+  body { min-height: 100vh; background: #2C2C35; background: var(--bg); font-family: 'DM Sans', sans-serif; color: #ede5e7; color: var(--t1); }
+  .os { max-width: 820px; margin: 0 auto; padding: 28px 20px 80px; }
+
+  /* header */
+  .hd { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid var(--b1); margin-bottom: 24px; }
+  .hd-left { display: flex; flex-direction: column; gap: 2px; }
+  .hd-brand { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--rose); }
+  .hd-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; color: var(--blush); line-height: 1; }
+  .hd-right { text-align: right; }
+  .hd-day { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; color: var(--t1); line-height: 1; }
+  .hd-date { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--t3); letter-spacing: 0.1em; margin-top: 3px; }
+
+  /* day strip */
+  .day-strip { display: flex; gap: 6px; margin-bottom: 20px; }
+  .day-btn { flex: 1; background: var(--b3); border: 1px solid var(--b2); border-radius: 7px; padding: 10px 4px; cursor: pointer; transition: all 0.18s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .day-btn:hover { background: var(--b2); border-color: var(--b1); }
+  .day-btn.active { background: var(--rose3); border-color: var(--b1); }
+  .day-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--t3); }
+  .day-btn.active .day-label { color: var(--rose2); }
+  .day-dot { width: 4px; height: 4px; border-radius: 50%; background: transparent; }
+  .day-btn.today .day-dot { background: var(--rose); }
+
+  /* sprint bar */
+  .sprint-bar-wrap { background: var(--b3); border: 1px solid var(--b2); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .sprint-info { display: flex; flex-direction: column; gap: 2px; }
+  .sprint-lbl { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--t3); }
+  .sprint-name { font-size: 13px; font-weight: 500; color: var(--gold); }
+  .sprint-prog { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .sprint-pct { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--t3); }
+  .prog-track { width: 140px; height: 2px; background: var(--b2); border-radius: 2px; }
+  .prog-fill { height: 100%; background: linear-gradient(90deg, var(--rose), var(--gold)); border-radius: 2px; transition: width 0.5s; }
+
+  /* day theme */
+  .day-theme { border-radius: 10px; padding: 16px 18px; margin-bottom: 18px; border: 1px solid var(--b1); position: relative; overflow: hidden; }
+  .day-theme::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--rose), transparent); opacity: 0.4; }
+  .dt-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .dt-left { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .dt-tag { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--rose); }
+  .dt-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 300; color: var(--blush); }
+  .dt-focus { font-size: 12px; color: var(--t2); margin-top: 2px; line-height: 1.4; }
+  .dt-pillars { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .pillar-chip { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 9px; border-radius: 4px; border: 1px solid; white-space: nowrap; }
+  .pillar-chip.content { color: var(--blue); border-color: rgba(122,179,204,0.25); background: rgba(122,179,204,0.07); }
+  .pillar-chip.group { color: var(--rose2); border-color: rgba(176,112,128,0.25); background: var(--rose3); }
+  .pillar-chip.ops { color: var(--gold); border-color: rgba(201,169,110,0.25); background: var(--gold2); }
+  .pillar-chip.client { color: #a8d5a2; border-color: rgba(168,213,162,0.25); background: rgba(168,213,162,0.07); }
+  .pillar-chip.team { color: #d4a8cc; border-color: rgba(212,168,204,0.25); background: rgba(212,168,204,0.07); }
+
+  /* context */
+  .ctx-wrap { margin-bottom: 18px; }
+  .ctx-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--t3); margin-bottom: 7px; }
+  .ctx-label span { color: var(--rose); }
+  .ctx-input { width: 100%; background: var(--b3); border: 1px solid var(--b2); border-radius: 8px; padding: 11px 14px; color: var(--t1); font-family: 'DM Sans', sans-serif; font-size: 13px; resize: none; outline: none; min-height: 66px; transition: border-color 0.2s; line-height: 1.5; }
+  .ctx-input:focus { border-color: var(--b1); }
+  .ctx-input::placeholder { color: var(--t3); }
+
+  /* generate */
+  .gen-row { margin-bottom: 22px; }
+  .gen-btn { width: 100%; background: none; border: 1px solid var(--rose); color: var(--rose2); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; padding: 13px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .gen-btn:hover { background: var(--rose3); color: var(--blush); }
+  .gen-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* briefing */
+  .brief-box { background: var(--bg2); border: 1px solid var(--b1); border-radius: 10px; padding: 18px 20px; margin-bottom: 20px; }
+  .brief-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .brief-dot { width: 5px; height: 5px; background: var(--rose); border-radius: 50%; animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .brief-lbl { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--rose); }
+  .brief-text { font-size: 13px; color: var(--t2); line-height: 1.65; font-weight: 300; }
+  .brief-text strong { color: var(--t1); font-weight: 500; }
+  .hidden { display: none; }
+
+  /* shimmer */
+  .shim-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .shim { height: 12px; border-radius: 3px; background: linear-gradient(90deg, var(--b3) 25%, var(--b2) 50%, var(--b3) 75%); background-size: 200% 100%; animation: sh 1.3s infinite; }
+  @keyframes sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .shim:nth-child(1){width:80%} .shim:nth-child(2){width:65%} .shim:nth-child(3){width:72%}
+
+  /* tasks */
+  .section-hd { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--t3); margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .section-hd span:last-child { color: var(--rose); }
+  .task-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+  .task { display: flex; align-items: flex-start; gap: 12px; background: var(--b3); border: 1px solid var(--b2); border-radius: 8px; padding: 13px 15px; cursor: pointer; transition: all 0.18s; }
+  .task:hover { background: var(--b2); border-color: var(--b1); }
+  .task.done { opacity: 0.38; }
+  .task-cb { width: 17px; height: 17px; border: 1.5px solid var(--b1); border-radius: 4px; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.18s; }
+  .task.done .task-cb { background: var(--rose); border-color: var(--rose); color: var(--blush); font-size: 9px; }
+  .task-body { flex: 1; }
+  .task-tag { font-family: 'DM Mono', monospace; font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 3px; }
+  .task-tag.content { color: var(--blue); }
+  .task-tag.group { color: var(--rose2); }
+  .task-tag.ops { color: var(--gold); }
+  .task-tag.client { color: #a8d5a2; }
+  .task-tag.team { color: #d4a8cc; }
+  .task-txt { font-size: 13px; color: var(--t1); line-height: 1.4; }
+  .task.done .task-txt { text-decoration: line-through; color: var(--t3); }
+  .task-time { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--t3); margin-top: 3px; }
+
+  /* non-negotiables */
+  .nn-section { margin-bottom: 22px; }
+  .nn-list { display: flex; flex-direction: column; gap: 6px; }
+  .nn-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--b3); border: 1px solid var(--b2); border-radius: 7px; font-size: 12px; color: var(--t2); cursor: pointer; transition: all 0.18s; }
+  .nn-item:hover { background: var(--b2); }
+  .nn-item.done { opacity: 0.35; }
+  .nn-item.done .nn-txt { text-decoration: line-through; }
+  .nn-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .nn-dot.content { background: var(--blue); }
+  .nn-dot.group { background: var(--rose); }
+  .nn-dot.ops { background: var(--gold); }
+  .nn-dot.client { background: #a8d5a2; }
+  .nn-dot.team { background: #d4a8cc; }
+
+  /* reflection */
+  .reflect-wrap { margin-bottom: 18px; }
+  .reflect-lbl { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--t3); margin-bottom: 7px; }
+  .reflect-ta { width: 100%; background: var(--b3); border: 1px solid var(--b2); border-radius: 8px; padding: 11px 14px; color: var(--t1); font-family: 'DM Sans', sans-serif; font-size: 13px; resize: none; outline: none; min-height: 66px; transition: border-color 0.2s; line-height: 1.5; }
+  .reflect-ta:focus { border-color: var(--b1); }
+  .reflect-ta::placeholder { color: var(--t3); }
+
+  /* save */
+  .save-btn { width: 100%; background: none; border: 1px solid var(--b1); color: var(--t3); font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; padding: 13px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .save-btn:hover { color: var(--t2); background: var(--b2); }
+  .save-btn.saved { color: var(--rose2); border-color: var(--rose); }
+
+  .err-msg { font-size: 12px; color: var(--rose2); padding: 4px 0 8px; }
+
+  @media (max-width: 500px) {
+    .os { padding: 18px 14px 70px; }
+    .day-strip { gap: 4px; }
+    .day-label { font-size: 8px; }
+    .sprint-bar-wrap { flex-direction: column; align-items: flex-start; }
+    .prog-track { width: 100%; }
+    .sprint-prog { align-items: flex-start; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="os">
+
+  <!-- Header -->
+  <div class="hd">
+    <div class="hd-left">
+      <span class="hd-brand">The Strong Committee</span>
+      <span class="hd-title">Daily OS</span>
+    </div>
+    <div class="hd-right">
+      <div class="hd-day" id="hd-day"></div>
+      <div class="hd-date" id="hd-date"></div>
+    </div>
+  </div>
+
+  <!-- Day strip -->
+  <div class="day-strip" id="day-strip"></div>
+
+  <!-- Sprint bar -->
+  <div class="sprint-bar-wrap">
+    <div class="sprint-info">
+      <div class="sprint-lbl" id="sprint-lbl"></div>
+      <div class="sprint-name" id="sprint-name"></div>
+    </div>
+    <div class="sprint-prog">
+      <div class="sprint-pct" id="sprint-pct"></div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Day theme -->
+  <div class="day-theme">
+    <div class="dt-row">
+      <div class="dt-left">
+        <div class="dt-tag" id="dt-tag"></div>
+        <div class="dt-name" id="dt-name"></div>
+        <div class="dt-focus" id="dt-focus"></div>
+        <div class="dt-pillars" id="dt-pillars"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context -->
+  <div class="ctx-wrap">
+    <div class="ctx-label">What's on your plate today? <span>(optional — makes tasks specific)</span></div>
+    <textarea class="ctx-input" id="ctx-input" placeholder='e.g. "Kelly check-in overdue, need to send Vuk 3 scripts, Muhammad waiting on GUILT keyword brief"'></textarea>
+  </div>
+
+  <!-- Generate -->
+  <div class="gen-row">
+    <button class="gen-btn" id="gen-btn" onclick="generate()">Generate Today's Tasks</button>
+  </div>
+
+  <!-- Briefing -->
+  <div class="brief-box hidden" id="brief-box">
+    <div class="brief-head">
+      <span class="brief-dot"></span>
+      <span class="brief-lbl">AI Business Manager</span>
+    </div>
+    <div class="shim-wrap hidden" id="shim-wrap">
+      <div class="shim"></div><div class="shim"></div><div class="shim"></div>
+    </div>
+    <div class="brief-text" id="brief-text"></div>
+    <div class="err-msg hidden" id="err-msg"></div>
+  </div>
+
+  <!-- AI Tasks -->
+  <div id="tasks-section" class="hidden">
+    <div class="section-hd">
+      <span>Today's Tasks</span>
+      <span id="tasks-progress">0 / 0 done</span>
+    </div>
+    <div class="task-list" id="task-list"></div>
+  </div>
+
+  <!-- Non-negotiables -->
+  <div class="nn-section">
+    <div class="section-hd"><span>Non-Negotiables</span></div>
+    <div class="nn-list" id="nn-list"></div>
+  </div>
+
+  <!-- Reflection -->
+  <div class="reflect-wrap">
+    <div class="reflect-lbl">Today's note</div>
+    <textarea class="reflect-ta" id="reflect-ta" placeholder="What got done? What's carrying over? Any decisions made?"></textarea>
+  </div>
+
+  <button class="save-btn" id="save-btn" onclick="saveDay()">Save Day</button>
+
+</div>
+
+<script>
+const ANTHROPIC_KEY = "YOUR_API_KEY_HERE";
+
+const DAYS = [
+  {
+    key:"Mon", full:"Monday", theme:"Content + Repurpose Day",
+    focus:"Deep work only. Write scripts with Muhammad, repurpose existing content into email/ManyChat, batch Reels. Zero admin.",
+    pillars:[{label:"Content",cls:"content"}],
+    nonneg:[
+      {text:"Write or review at least 1 new Reel script with Muhammad",cls:"content"},
+      {text:"Repurpose 1 existing Reel into an email draft or ManyChat sequence",cls:"content"},
+      {text:"Weekly planning review — lock in the week's top 3 priorities",cls:"ops"}
+    ]
+  },
+  {
+    key:"Tue", full:"Tuesday", theme:"Client Day",
+    focus:"Check-in responses, program adjustments, Trainerize updates. Client-first, no deep work blocks.",
+    pillars:[{label:"Clients",cls:"client"}],
+    nonneg:[
+      {text:"Process all pending client check-ins (Alizé, Gianna, Harshani + roster)",cls:"client"},
+      {text:"Flag any clients approaching phase end or needing program adjustments",cls:"client"},
+      {text:"Send any overdue check-in touchpoints via automation or manually",cls:"client"}
+    ]
+  },
+  {
+    key:"Wed", full:"Wednesday", theme:"Group Offer Build Day",
+    focus:"Protected time for group offer only. No client work, no admin. This is how the offer gets built.",
+    pillars:[{label:"Group Offer",cls:"group"}],
+    nonneg:[
+      {text:"Move 1 concrete group offer milestone forward (concept → curriculum → pricing → page → waitlist)",cls:"group"},
+      {text:"Document decisions made — what the offer is, who it's for, what it costs",cls:"group"},
+      {text:"Identify 1 thing blocking the offer from existing and solve it",cls:"group"}
+    ]
+  },
+  {
+    key:"Thu", full:"Thursday", theme:"Team + Systems",
+    focus:"Muhammad script review, Vuk marketing check-in, assistant QA, AI/automation improvements.",
+    pillars:[{label:"Team",cls:"team"},{label:"Ops/AI",cls:"ops"}],
+    nonneg:[
+      {text:"Review Muhammad's script drafts — give notes or approve for filming",cls:"team"},
+      {text:"Check in with Vuk on current campaign performance and next steps",cls:"team"},
+      {text:"QA Trainerize programs submitted by Nicol/Jose/Chloe",cls:"client"}
+    ]
+  },
+  {
+    key:"Fri", full:"Friday", theme:"Batch + Close",
+    focus:"Script batch for next week with Muhammad, email list progress check, weekly win review, set Monday.",
+    pillars:[{label:"Content",cls:"content"},{label:"Group Offer",cls:"group"}],
+    nonneg:[
+      {text:"Batch-write 2-3 Reel scripts with Muhammad for next week",cls:"content"},
+      {text:"Check email list growth — did the funnel move this week?",cls:"content"},
+      {text:"Weekly win: what moved the needle on group offer or content system?",cls:"ops"}
+    ]
+  }
+];
+
+const SPRINTS = [
+  {week:1,name:"Foundation Sprint",desc:"Audit content, map email strategy, define group offer MVP"},
+  {week:2,name:"Content System Build",desc:"Build repurposing workflow, set up email capture, write first 3 nurture emails"},
+  {week:3,name:"Group Offer Design",desc:"Define curriculum, pricing, capacity, delivery method"},
+  {week:4,name:"AI Pipeline Expansion",desc:"Automate content repurposing, build ManyChat email capture sequence"},
+  {week:5,name:"Email List Launch",desc:"Go live with lead magnet funnel, start weekly newsletter"},
+  {week:6,name:"Group Offer Waitlist",desc:"Open waitlist, warm audience, collect deposits"},
+  {week:7,name:"Systems Audit",desc:"Review automation gaps, optimize check-in pipeline, document SOPs"},
+  {week:8,name:"Conversion Push",desc:"Email sequence to convert waitlist, finalize group program structure"},
+  {week:9,name:"Group Launch",desc:"Launch cohort 1, onboard members, run first week"},
+  {week:10,name:"Content Scale",desc:"Batch 4 weeks of content, systemize with Muhammad, test AI draft workflow"},
+  {week:11,name:"Revenue Review",desc:"Stripe analysis, client roster health, plan Q3 pricing"},
+  {week:12,name:"Next 90-Day Plan",desc:"Build next sprint, set new revenue targets"}
+];
+
+const TAG_CLS = {"Content Engine":"content","Group Offer":"group","Operations/AI":"ops","Client Management":"client","Team Management":"team"};
+
+let activeDay = 0;
+let tasks = [];
+let checked = {};
+let nnChecked = {};
+
+function getTodayIdx() {
+  const d = new Date().getDay();
+  return (d === 0 || d === 6) ? 0 : d - 1;
+}
+
+function getSprintWeek() {
+  const start = new Date("2026-05-11");
+  const diff = Math.floor((new Date() - start) / (7*24*60*60*1000));
+  return Math.max(0, Math.min(diff, 11));
+}
+
+function getWeekPct() {
+  const now = new Date();
+  const day = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  return Math.min(100, Math.round(((day*24*60 + now.getHours()*60 + now.getMinutes()) / (5*24*60)) * 100));
+}
+
+function storageKey(dayIdx) {
+  return `tsc-os-${new Date().toDateString()}-d${dayIdx}`;
+}
+
+function init() {
+  const todayIdx = getTodayIdx();
+  activeDay = todayIdx;
+
+  // Header date
+  const now = new Date();
+  document.getElementById("hd-day").textContent = DAYS[activeDay].full;
+  document.getElementById("hd-date").textContent = now.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+
+  // Day strip
+  const strip = document.getElementById("day-strip");
+  DAYS.forEach((d, i) => {
+    const btn = document.createElement("button");
+    btn.className = `day-btn${i===activeDay?" active":""}${i===todayIdx?" today":""}`;
+    btn.innerHTML = `<span class="day-label">${d.key}</span><span class="day-dot"></span>`;
+    btn.onclick = () => switchDay(i);
+    strip.appendChild(btn);
+  });
+
+  // Sprint
+  const sw = getSprintWeek();
+  const sprint = SPRINTS[sw];
+  document.getElementById("sprint-lbl").textContent = `Sprint Week ${sw+1} / 12`;
+  document.getElementById("sprint-name").textContent = sprint.name;
+  const pct = getWeekPct();
+  document.getElementById("sprint-pct").textContent = `${pct}% of week done`;
+  document.getElementById("prog-fill").style.width = pct + "%";
+
+  renderDayTheme();
+  renderNonNeg();
+  loadDay(activeDay);
+}
+
+function switchDay(i) {
+  activeDay = i;
+  document.querySelectorAll(".day-btn").forEach((b,idx) => {
+    b.classList.toggle("active", idx === i);
+  });
+  document.getElementById("hd-day").textContent = DAYS[i].full;
+  tasks = []; checked = {}; nnChecked = {};
+  document.getElementById("brief-box").classList.add("hidden");
+  document.getElementById("tasks-section").classList.add("hidden");
+  document.getElementById("ctx-input").value = "";
+  document.getElementById("reflect-ta").value = "";
+  document.getElementById("gen-btn").textContent = "Generate Today's Tasks";
+  renderDayTheme();
+  renderNonNeg();
+  loadDay(i);
+}
+
+function renderDayTheme() {
+  const d = DAYS[activeDay];
+  document.getElementById("dt-tag").textContent = d.theme;
+  document.getElementById("dt-name").textContent = d.full;
+  document.getElementById("dt-focus").textContent = d.focus;
+  const pillarsEl = document.getElementById("dt-pillars");
+  pillarsEl.innerHTML = d.pillars.map(p => `<span class="pillar-chip ${p.cls}">${p.label}</span>`).join("");
+}
+
+function renderNonNeg() {
+  const d = DAYS[activeDay];
+  const list = document.getElementById("nn-list");
+  list.innerHTML = d.nonneg.map((n,i) => `
+    <div class="nn-item${nnChecked[i]?" done":""}" onclick="toggleNN(${i})">
+      <span class="nn-dot ${n.cls}"></span>
+      <span class="nn-txt">${n.text}</span>
+    </div>
+  `).join("");
+}
+
+function toggleNN(i) {
+  nnChecked[i] = !nnChecked[i];
+  renderNonNeg();
+}
+
+function renderTasks() {
+  const section = document.getElementById("tasks-section");
+  const list = document.getElementById("task-list");
+  if (!tasks.length) { section.classList.add("hidden"); return; }
+  section.classList.remove("hidden");
+  const done = Object.values(checked).filter(Boolean).length;
+  document.getElementById("tasks-progress").textContent = `${done} / ${tasks.length} done`;
+  list.innerHTML = tasks.map((t,i) => {
+    const cls = TAG_CLS[t.tag] || "content";
+    return `
+      <div class="task${checked[i]?" done":""}" onclick="toggleTask(${i})">
+        <div class="task-cb">${checked[i]?"✓":""}</div>
+        <div class="task-body">
+          <div class="task-tag ${cls}">${t.tag}</div>
+          <div class="task-txt">${t.text}</div>
+          ${t.time ? `<div class="task-time">${t.time}</div>` : ""}
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function toggleTask(i) {
+  checked[i] = !checked[i];
+  renderTasks();
+}
+
+function saveDay() {
+  const key = storageKey(activeDay);
+  const data = {
+    briefing: document.getElementById("brief-text").innerHTML,
+    tasks, checked, nnChecked,
+    reflection: document.getElementById("reflect-ta").value,
+    context: document.getElementById("ctx-input").value
+  };
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) {}
+  const btn = document.getElementById("save-btn");
+  btn.textContent = "✓ Saved";
+  btn.classList.add("saved");
+  setTimeout(() => { btn.textContent = "Save Day"; btn.classList.remove("saved"); }, 2200);
+}
+
+function loadDay(i) {
+  const key = storageKey(i);
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (d.briefing) {
+      document.getElementById("brief-text").innerHTML = d.briefing;
+      document.getElementById("brief-box").classList.remove("hidden");
+      document.getElementById("gen-btn").textContent = "Regenerate Today's Tasks";
+    }
+    if (d.tasks) tasks = d.tasks;
+    if (d.checked) checked = d.checked;
+    if (d.nnChecked) nnChecked = d.nnChecked;
+    if (d.reflection) document.getElementById("reflect-ta").value = d.reflection;
+    if (d.context) document.getElementById("ctx-input").value = d.context;
+    renderTasks();
+    renderNonNeg();
+  } catch(e) {}
+}
+
+async function generate() {
+  const btn = document.getElementById("gen-btn");
+  btn.disabled = true;
+  btn.textContent = "Building your day...";
+
+  const briefBox = document.getElementById("brief-box");
+  const shimWrap = document.getElementById("shim-wrap");
+  const briefText = document.getElementById("brief-text");
+  const errMsg = document.getElementById("err-msg");
+
+  briefBox.classList.remove("hidden");
+  shimWrap.classList.remove("hidden");
+  briefText.textContent = "";
+  errMsg.classList.add("hidden");
+
+  const day = DAYS[activeDay];
+  const sw = getSprintWeek();
+  const sprint = SPRINTS[sw];
+  const context = document.getElementById("ctx-input").value;
+
+  const prompt = `TSC business manager for Danny Saltos. Today: ${day.full} (${day.theme}). Sprint week ${sw+1}: ${sprint.name} — ${sprint.desc}. ${context ? "Notes: " + context : ""}
+
+Return ONLY this JSON (no markdown):
+{"briefing":"1 sentence for today.","tasks":[{"tag":"Content Engine","text":"specific 30-min task"},{"tag":"Client Management","text":"specific 20-min task"},{"tag":"Group Offer","text":"specific 45-min task"},{"tag":"Operations/AI","text":"specific 15-min task"}]}
+
+Rules: Wed tasks = group offer only. Mon tasks = include content repurposing. Tags must be exactly: Content Engine, Client Management, Group Offer, Operations/AI, or Team Management. Tasks reference real people: Muhammad (scripts), Vuk (marketing), Nicol/Jose/Chloe (Trainerize), clients like Alizé/Gianna/Harshani.`;
+
+  try {
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        
+        "anthropic-version": "2023-06-01",
+        
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 400,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const text = data.content?.find(b => b.type === "text")?.text || "";
+    const clean = text.replace(/```json|```/g,"").trim();
+    const result = JSON.parse(clean);
+
+    shimWrap.classList.add("hidden");
+    briefText.innerHTML = (result.briefing||"").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
+    tasks = result.tasks || [];
+    checked = {};
+    renderTasks();
+    btn.textContent = "Regenerate Today's Tasks";
+  } catch(e) {
+    shimWrap.classList.add("hidden");
+    errMsg.textContent = "Error: " + (e.message || "Check your API key or connection.");
+    errMsg.classList.remove("hidden");
+    btn.textContent = "Try Again";
+  }
+
+  btn.disabled = false;
+}
+
+init();
+</script>
+</body>
+</html>
